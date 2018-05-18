@@ -8,6 +8,6 @@ maven { url 'https://jitpack.io' }
 
 under 'allprojects/repositories' in your top level Gradle build file, and:
 
-implementation 'com.github.JustJoost:java-collections:master-SNAPSHOT'
+implementation 'com.github.JustJoost:java-collections:1.0'
 
 under 'dependencies' in your module Gradle build file
