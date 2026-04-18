@@ -7,10 +7,14 @@
  */
 
 // Apply the java-library plugin to add support for Java Library
-apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'java-library'
 
 group = 'com.github.jitpack'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 sourceSets {
 	main {
@@ -22,21 +26,21 @@ sourceSets {
 
 // In this section you declare where to find the dependencies of your project
 repositories {
-    // Use jcenter for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+tasks.register('sourcesJar', Jar) {
+    dependsOn classes
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -44,4 +48,3 @@ artifacts {
     archives sourcesJar
     archives javadocJar
 }
-
