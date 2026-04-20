@@ -14,13 +14,22 @@ public final class CircBufferTests {
         for (int i = 0; i < 17; i++) {
             cBuff1.add(i);
         }
+        cBuff1.insertFromOldest(4, 100);
         for (int i = 0; i < 7; i++) {
             cBuff2.add(i);
         }
+        cBuff2.insertFromNewest(0, 100);
 
         Object[] array1 = cBuff1.toArray();
-        System.out.print("Elements: ");
+        System.out.print("Buffer 1 elements: ");
         for (Object o : array1) {
+            System.out.print(o.toString() + ", ");
+        }
+        System.out.print("\r\n");
+
+        Object[] array2 = cBuff2.toArray();
+        System.out.print("Buffer 2 elements: ");
+        for (Object o : array2) {
             System.out.print(o.toString() + ", ");
         }
         System.out.print("\r\n");
@@ -41,14 +50,14 @@ public final class CircBufferTests {
         System.out.print(cBuff2.popNewest().toString());
         System.out.print("\r\n");
 
-        Object[] array2 = cBuff2.toArray();
+        Object[] array3 = cBuff2.toArray();
         System.out.print("Elements: ");
-        for (Object o : array2) {
+        for (Object o : array3) {
             System.out.print(o.toString() + ", ");
         }
         System.out.print("\r\n");
 
-        if (cBuff1.size() == 10 && cBuff2.size() == 5) {
+        if (cBuff1.size() == 10 && cBuff2.size() == 6) {
             System.out.print("Size determination OK");
         } else {
             System.out.print("Size determination FAILED");
@@ -89,7 +98,7 @@ public final class CircBufferTests {
         for (int i = 0; i < 10; i++) {
             cBuff1.popNewest();
         }
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             cBuff2.popOldest();
         }
 
@@ -110,8 +119,8 @@ public final class CircBufferTests {
         cBuff1.removeFromNewest(5);
         cBuff2.removeFromOldest(3);
 
-        System.out.print(cBuff1.toString() + "\r\n");
-        System.out.print(cBuff2.toString() + "\r\n");
+        System.out.print(cBuff1 + "\r\n");
+        System.out.print(cBuff2 + "\r\n");
 
         if (cBuff1.getFromNewest(4) == 12 && cBuff2.getFromOldest(3) == 4) {
             System.out.print("Mid removal OK");
@@ -121,7 +130,6 @@ public final class CircBufferTests {
         System.out.print("\r\n");
 
         cBuff1.clear();
-
         if (cBuff1.isEmpty()) {
             System.out.print("Clear OK");
         } else {
@@ -129,6 +137,7 @@ public final class CircBufferTests {
         }
         System.out.print("\r\n");
 
+        cBuff2.add(100);
         Iterator<Integer> iter = cBuff2.iterator();
         System.out.print("Multiple element iterator: [");
         if (iter.hasNext()) {
@@ -155,7 +164,7 @@ public final class CircBufferTests {
         for (int i = 0; i < 17; i++) {
             cBuff1.add(i);
         }
-        ListIterator<Integer> liter = cBuff1.iterator(cBuff1.size());
+        ListIterator<Integer> liter = cBuff1.iterator(cBuff1.size() - 1);
         System.out.print("Reverse iterator: [");
         if (liter.hasPrevious()) {
             System.out.print(liter.previous().toString());

@@ -1,8 +1,6 @@
 package com.josoft.collections;
 
 import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
@@ -15,11 +13,11 @@ import java.util.NoSuchElementException;
  * @version 1.0
  */
 public class CircBuffer<T> extends AbstractCollection<T> {
-    private int _capacity;
+    private final int _capacity;
     private int _size = 0;
-    private int _head = -1;
-    private int _tail = 0;
-    private ArrayList<T> _data;
+    private int _newest = -1;
+    private int _oldest = 0;
+    private final Object[] _data;
     private boolean _chkOffsets = true;
 
     /**
@@ -30,10 +28,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      */
     public CircBuffer(int capacity) {
         _capacity = capacity;
-        _data = new ArrayList<T>(_capacity);
-        for (int iEl = 0; iEl < _capacity; iEl++) {
-            _data.add(null);
-        }
+        _data = new Object[_capacity];
     }
 
     /**
@@ -48,10 +43,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      */
     public CircBuffer(int capacity, boolean chkOffsetsValidness) {
         _capacity = capacity;
-        _data = new ArrayList<T>(_capacity);
-        for (int iEl = 0; iEl < _capacity; iEl++) {
-            _data.add(null);
-        }
+        _data = new Object[_capacity];
         _chkOffsets = chkOffsetsValidness;
     }
 
@@ -63,20 +55,21 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      */
     @Override
     public boolean add(T value) {
-        _head++;
+        _newest++;
         if (_size < _capacity) {
             _size++;
         } else {
-            _tail = _head + 1;
+            _oldest = _newest + 1;
         }
-        if (_head == _capacity) {
-            _head = 0;
+        if (_newest == _capacity) {
+            _newest = 0;
         }
-        if (_tail == _capacity) {
-            _tail = 0;
+        if (_oldest == _capacity) {
+            _oldest = 0;
         }
-        _data.set(_head, value);
+        _data[_newest] = value;
 
+        // Should return true if collection changes, collection always changes, hence always true
         return true;
     }
 
@@ -85,12 +78,10 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      *
      * @param offset The distance from the newest element
      * @param value  The value assigned to the element
-     * @return This circular buffer, for method chaining
      */
-    public CircBuffer<T> setFromNewest(int offset, T value) {
-        _data.set(offsetToIndexInData(offset, true), value);
+    public void setFromNewest(int offset, T value) {
+        _data[offsetToIndexInData(offset, true, _chkOffsets)] = value;
 
-        return this;
     }
 
     /**
@@ -98,12 +89,10 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      *
      * @param offset The distance from the oldest element
      * @param value  The value assigned to the element
-     * @return This circular buffer, for method chaining
      */
-    public CircBuffer<T> setFromOldest(int offset, T value) {
-        _data.set(offsetToIndexInData(offset, false), value);
+    public void setFromOldest(int offset, T value) {
+        _data[offsetToIndexInData(offset, false, _chkOffsets)] = value;
 
-        return this;
     }
 
     /**
@@ -112,8 +101,9 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @param offset The distance from the newest element
      * @return The value of the nth-to-newest element
      */
+    @SuppressWarnings("unchecked")
     public T getFromNewest(int offset) {
-        return _data.get(offsetToIndexInData(offset, true));
+        return (T) _data[offsetToIndexInData(offset, true, _chkOffsets)];
     }
 
     /**
@@ -122,8 +112,9 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @param offset The distance from the oldest element
      * @return The value of the nth-to-oldest element
      */
+    @SuppressWarnings("unchecked")
     public T getFromOldest(int offset) {
-        return _data.get(offsetToIndexInData(offset, false));
+        return (T) _data[offsetToIndexInData(offset, false, _chkOffsets)];
     }
 
     /**
@@ -131,18 +122,23 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * mind that removal requires shifting n elements.
      *
      * @param offset The distance from the newest element
-     * @return This buffer for method chaining
      */
-    public CircBuffer<T> removeFromNewest(int offset) {
+    public void removeFromNewest(int offset) {
         if (_chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        for (int i = offset; i >= 1; i--) {
-            setFromNewest(i, getFromNewest(i - 1));
-        }
-        popNewest();
 
-        return this;
+        // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
+        // index by one). Chose the side that requires the least amount of elements to be shifted.
+        // Removal at one of both ends will not cause shifting at all.
+        if (offset <= _size/2) {
+            for (int i = offset; i >= 1; i--) {
+                setFromNewest(i, getFromNewest(i - 1));
+            }
+            popNewest();
+        } else {
+            removeFromOldest(_size - offset - 1);
+        }
     }
 
     /**
@@ -150,36 +146,101 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * mind that removal requires shifting n elements.
      *
      * @param offset The distance from the oldest element
-     * @return This buffer for method chaining
      */
-    public CircBuffer<T> removeFromOldest(int offset) {
+    public void removeFromOldest(int offset) {
         if (_chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        for (int i = offset; i >= 1; i--) {
-            setFromOldest(i, getFromOldest(i - 1));
-        }
-        popOldest();
 
-        return this;
+        // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
+        // index by one). Chose the side that requires the least amount of elements to be shifted.
+        // Removal at one of both ends will not cause shifting at all.
+        if (offset < _size/2) {
+            for (int i = offset; i >= 1; i--) {
+                setFromOldest(i, getFromOldest(i - 1));
+            }
+            popOldest();
+        } else {
+            removeFromNewest(_size - offset - 1);
+        }
     }
+
+    public void insertFromNewest(int offset, T value) {
+        if (_chkOffsets && !isValidOffset(offset)) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+
+        // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
+        // index by one). Chose the side that requires the least amount of elements to be shifted.
+        // Inserting at one of both ends will not cause shifting at all.
+        if (offset <= _size/2) {
+            // 'Duplicate' the newest element, oldest element will automatically be overwritten.
+            add(getFromNewest(0));
+            for (int i = _size - 2; i >= _size - offset; i--) {
+                int iToChange = offsetToIndexInData(i, false, true);
+                int iToChangeTo = offsetToIndexInData(i - 1, false, false);
+                _data[iToChange] = _data[iToChangeTo];
+            }
+            _data[offsetToIndexInData(_size - offset - 1, false, false)] = value;
+        } else {
+            insertFromOldest(_size - offset - 1, value);
+        }
+    }
+
+    public void insertFromOldest(int offset, T value) {
+        if (_chkOffsets && !isValidOffset(offset)) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+
+        // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
+        // index by one). Chose the side that requires the least amount of elements to be shifted.
+        // Inserting at one of both ends will not cause shifting at all.
+        if (offset < _size/2) {
+            // If capacity has not been reached yet, move the oldest element down by one, and the
+            // pointer to oldest, and increase size (effectively 'duplicating' the oldest element,
+            // or 'adding' at the oldest side of the buffer).
+            if (_size < _capacity) {
+                int prevOldest = _oldest;
+                _oldest--;
+                if (_oldest < 0) {
+                    _oldest = _capacity - 1;
+                }
+                _data[_oldest] = _data[prevOldest];
+                _size++;
+            }
+
+            for (int i = 0; i < offset; i++) {
+                int iToChange = offsetToIndexInData(i, false, true);
+                int iToChangeTo = offsetToIndexInData(i + 1, false, false);
+                _data[iToChange] = _data[iToChangeTo];
+            }
+            _data[offsetToIndexInData(offset, false, false)] = value;
+        } else {
+            insertFromNewest(_size - offset - 1, value);
+        }
+    }
+
 
     /**
      * Returns and removes the newest element.
      *
      * @return The newest element
      */
+    @SuppressWarnings("unchecked")
     public T popNewest() {
         if (_size == 0) {
             throw new NegativeArraySizeException();
         }
-        T toReturn = _data.get(_head);
+        T toReturn = (T) _data[_newest];
 
-        _head--;
-        if (_head < 0) {
-            _head = _capacity - 1;
+        _newest--;
+        if (_newest < 0) {
+            _newest = _capacity - 1;
         }
         _size--;
+        if (_size == 0) {
+            clear();
+        }
 
         return toReturn;
     }
@@ -189,18 +250,22 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      *
      * @return The oldest element
      */
+    @SuppressWarnings("unchecked")
     public T popOldest() {
-        T toReturn = _data.get(_tail);
+        T toReturn = (T) _data[_oldest];
 
         if (_size > 0) {
-            _tail++;
+            _oldest++;
         } else {
             throw new NegativeArraySizeException();
         }
-        if (_tail > _capacity - 1) {
-            _tail = 0;
+        if (_oldest > _capacity - 1) {
+            _oldest = 0;
         }
         _size--;
+        if (_size == 0) {
+            clear();
+        }
 
         return toReturn;
     }
@@ -212,8 +277,8 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      */
     @Override
     public void clear() {
-        _head = -1;
-        _tail = 0;
+        _newest = -1;
+        _oldest = 0;
         _size = 0;
     }
 
@@ -228,25 +293,25 @@ public class CircBuffer<T> extends AbstractCollection<T> {
     }
 
     /**
-     * Translates offset to an index in the internal ArrayList<T> containing the
+     * Translates offset to an index in the internal array containing the
      * actual elements.
      *
      * @param offset     Offset to translate
      * @param fromNewest True if offset is from newest element, false if from oldest
-     * @return Index in internal ArrayList<T> _data
+     * @return Index in internal array _data
      */
-    private int offsetToIndexInData(int offset, boolean fromNewest) {
+    private int offsetToIndexInData(int offset, boolean fromNewest, boolean chkOffsets) {
         int iInData = 0;
-        if (_chkOffsets && !isValidOffset(offset)) {
+        if (chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
         }
         if (fromNewest) {
-            iInData = _head - offset;
+            iInData = _newest - offset;
             while (iInData < 0) {
                 iInData += _capacity;
             }
         } else {
-            iInData = _tail + offset;
+            iInData = _oldest + offset;
             while (iInData > _capacity - 1) {
                 iInData -= _capacity;
             }
@@ -317,6 +382,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
             _buffer = buffer;
             _iPresent = index;
         }
+
         /*
          * (non-Javadoc)
          *
@@ -386,7 +452,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
 
         @Override
         public void add(T t) {
-            _buffer.add(t);
+            throw new UnsupportedOperationException();
         }
     }
 
