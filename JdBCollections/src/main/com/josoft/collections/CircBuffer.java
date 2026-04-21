@@ -165,6 +165,14 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         }
     }
 
+    /**
+     * Inserts an element at the specified offset from the newest element. If
+     * performance is a concern, keep in mind that insertion requires shifting
+     * elements.
+     *
+     * @param offset The distance from the oldest element
+     * @param value  The value to be inserted
+     */
     public void insertFromNewest(int offset, T value) {
         if (_chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
@@ -187,6 +195,14 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         }
     }
 
+    /**
+     * Inserts an element at the specified offset from the oldest element. If
+     * performance is a concern, keep in mind that insertion requires shifting
+     * elements.
+     *
+     * @param offset The distance from the oldest element
+     * @param value  The value to be inserted
+     */
     public void insertFromOldest(int offset, T value) {
         if (_chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
@@ -320,12 +336,13 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         return iInData;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Returns the number of elements curren    tly in this circular buffer.
      *
-     * @see java.util.AbstractCollection#size()
+     * @return The number of elements in this buffer
+     * @see AbstractCollection#size()
      */
-    @Override
+     @Override
     public int size() {
         return _size;
     }
@@ -351,6 +368,13 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         return new CircBufferIterator(this);
     }
 
+    /**
+     * Returns an iterator over the elements in this buffer in proper sequence,
+     * starting from the index supplied (counting from the oldest element).
+     *
+     * @return A ListIterator of the elements in this buffer
+     * @see AbstractCollection#iterator()
+     */
     public ListIterator<T> iterator(int index) {
         return new CircBufferIterator(this, index);
     }
@@ -363,13 +387,12 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      *
      */
     class CircBufferIterator implements ListIterator<T> {
-        private CircBuffer<T> _buffer;
+        private final CircBuffer<T> _buffer;
         private int _iPresent = -1;
 
         /**
          * Initializes iterator, specifying CircBuffer to iterate over.
          *
-         * @param buffer
          */
         public CircBufferIterator(CircBuffer<T> buffer) {
             _buffer = buffer;
@@ -452,7 +475,16 @@ public class CircBuffer<T> extends AbstractCollection<T> {
 
         @Override
         public void add(T t) {
-            throw new UnsupportedOperationException();
+            _buffer.insertFromOldest(_iPresent, t);
+            _iPresent++;
+        }
+
+        public T peek(int offset) {
+            if (_buffer.isValidOffset(_iPresent + offset)) {
+                return _buffer.getFromOldest(_iPresent + offset);
+            } else {
+                return null;
+            }
         }
     }
 
