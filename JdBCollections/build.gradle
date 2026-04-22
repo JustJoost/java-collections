@@ -27,30 +27,9 @@ sourceSets {
 // In this section you declare where to find the dependencies of your project
 repositories {
     mavenCentral()
+    maven { url "https://jitpack.io"  }
 }
 
 dependencies {
-}
-
-tasks.register('sourcesJar', Jar) {
-    dependsOn classes
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-tasks.register('javadocJar', Jar) {
-    dependsOn javadoc
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
-
-allprojects {
-    repositories {
-        maven { url 'https://jitpack.io' }
-    }
+    implementation 'com.github.jitpack:gradle-simple:1.0'
 }
