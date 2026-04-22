@@ -17,13 +17,13 @@ java {
     withJavadocJar()
 }
 
-sourceSets {
-	main {
-		java {
-			srcDirs= ['src/main']
-		}
-	}
-}
+//sourceSets {
+//	main {
+//		java {
+//			srcDirs= ['src/main']
+//		}
+//	}
+//}
 
 // In this section you declare where to find the dependencies of your project
 repositories {
