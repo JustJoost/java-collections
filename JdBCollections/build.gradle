@@ -33,7 +33,7 @@ repositories {
 	// Use mavenCentral for resolving your dependencies.
 	// You can declare any Maven/Ivy/file repository here.
 	mavenCentral()
-    maven { url "https://jitpack.io"  }
+    maven { url = "https://jitpack.io"  }
 }
 
 dependencies {
