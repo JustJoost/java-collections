@@ -10,20 +10,20 @@
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
-group = 'com.github.jitpack'
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
-
-//sourceSets {
-//	main {
-//		java {
-//			srcDirs= ['src/main']
-//		}
-//	}
+//group = 'com.github.jitpack'
+//
+//java {
+//    withSourcesJar()
+//    withJavadocJar()
 //}
+
+sourceSets {
+	main {
+		java {
+			srcDirs= ['src/main']
+		}
+	}
+}
 
 // In this section you declare where to find the dependencies of your project
 repositories {
