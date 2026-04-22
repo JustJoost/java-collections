@@ -3,13 +3,11 @@ package com.josoft.collections;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import com.josoft.collections.CircBuffer;
-
 public final class CircBufferTests {
 
     public static void main(String[] args) {
-        CircBuffer<Integer> cBuff1 = new CircBuffer<Integer>(10);
-        CircBuffer<Integer> cBuff2 = new CircBuffer<Integer>(15);
+        CircBuffer<Integer> cBuff1 = new CircBuffer<>(10);
+        CircBuffer<Integer> cBuff2 = new CircBuffer<>(15);
 
         for (int i = 0; i < 17; i++) {
             cBuff1.add(i);

@@ -372,6 +372,8 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * Returns an iterator over the elements in this buffer in proper sequence,
      * starting from the index supplied (counting from the oldest element).
      *
+     * @param index Index at where to start iterating
+     *
      * @return A ListIterator of the elements in this buffer
      * @see AbstractCollection#iterator()
      */
