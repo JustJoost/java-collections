@@ -313,14 +313,14 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * actual elements.
      *
      * @param offset     Offset to translate
-     * @param fromNewest True if offset is from newest element, false if from oldest
+     * @param fromNewest True if offset is from the newest element, false if from oldest
      * @return Index in internal array _data
      */
     private int offsetToIndexInData(int offset, boolean fromNewest, boolean chkOffsets) {
-        int iInData = 0;
         if (chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
         }
+        int iInData;
         if (fromNewest) {
             iInData = _newest - offset;
             while (iInData < 0) {
@@ -337,7 +337,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
     }
 
     /**
-     * Returns the number of elements curren    tly in this circular buffer.
+     * Returns the number of elements currently in this circular buffer.
      *
      * @return The number of elements in this buffer
      * @see AbstractCollection#size()
@@ -348,6 +348,8 @@ public class CircBuffer<T> extends AbstractCollection<T> {
     }
 
     /**
+     * Get the maximal number of elements for this buffer
+     *
      * @return The maximal size of this buffer
      */
     public int capacity() {
