@@ -173,7 +173,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @param offset The distance from the oldest element
      * @param value  The value to be inserted
      */
-    public void insertFromNewest(int offset, T value) {
+    public void insertFromNewest(int offset, T value, boolean replaceNewest) {
         if (_chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
         }
@@ -182,8 +182,11 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         // index by one). Chose the side that requires the least amount of elements to be shifted.
         // Inserting at one of both ends will not cause shifting at all.
         if (offset <= _size/2) {
-            // 'Duplicate' the newest element, oldest element will automatically be overwritten.
-            add(getFromNewest(0));
+            if (!replaceNewest) {
+                // 'Duplicate' the newest element, oldest element will automatically be overwritten.
+                add(getFromNewest(0));
+            } // No need for action if newest is to be replaced, newest element will automatically
+            // be 'lost' in for loop
             for (int i = _size - 2; i >= _size - offset; i--) {
                 int iToChange = offsetToIndexInData(i, false, true);
                 int iToChangeTo = offsetToIndexInData(i - 1, false, false);
@@ -191,7 +194,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
             }
             _data[offsetToIndexInData(_size - offset - 1, false, false)] = value;
         } else {
-            insertFromOldest(_size - offset - 1, value);
+            insertFromOldest(_size - offset - 1, value, replaceNewest);
         }
     }
 
@@ -203,7 +206,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @param offset The distance from the oldest element
      * @param value  The value to be inserted
      */
-    public void insertFromOldest(int offset, T value) {
+    public void insertFromOldest(int offset, T value, boolean replaceNewest) {
         if (_chkOffsets && !isValidOffset(offset)) {
             throw new ArrayIndexOutOfBoundsException();
         }
@@ -215,14 +218,19 @@ public class CircBuffer<T> extends AbstractCollection<T> {
             // If capacity has not been reached yet, move the oldest element down by one, and the
             // pointer to oldest, and increase size (effectively 'duplicating' the oldest element,
             // or 'adding' at the oldest side of the buffer).
-            if (_size < _capacity) {
+            if (_size < _capacity || replaceNewest) {
                 int prevOldest = _oldest;
                 _oldest--;
                 if (_oldest < 0) {
                     _oldest = _capacity - 1;
                 }
                 _data[_oldest] = _data[prevOldest];
+            }
+            if (_size < _capacity) {
                 _size++;
+            } else if (replaceNewest) {
+                _newest = _oldest - 1;
+                if (_newest < 0) _newest = _capacity - 1;
             }
 
             for (int i = 0; i < offset; i++) {
@@ -232,10 +240,17 @@ public class CircBuffer<T> extends AbstractCollection<T> {
             }
             _data[offsetToIndexInData(offset, false, false)] = value;
         } else {
-            insertFromNewest(_size - offset - 1, value);
+            insertFromNewest(_size - offset - 1, value, replaceNewest);
         }
     }
 
+    public void insertFromNewest(int offset, T value) {
+        insertFromNewest(offset, value, false);
+    }
+
+    public void insertFromOldest(int offset, T value) {
+        insertFromOldest(offset, value, false);
+    }
 
     /**
      * Returns and removes the newest element.

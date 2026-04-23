@@ -12,7 +12,7 @@ public final class CircBufferTests {
         for (int i = 0; i < 17; i++) {
             cBuff1.add(i);
         }
-        cBuff1.insertFromOldest(4, 100);
+        cBuff1.insertFromOldest(9, 100, true);
         for (int i = 0; i < 7; i++) {
             cBuff2.add(i);
         }
