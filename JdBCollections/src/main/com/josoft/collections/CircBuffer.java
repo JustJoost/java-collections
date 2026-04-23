@@ -405,7 +405,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @version 1.0
      *
      */
-    class CircBufferIterator implements ListIterator<T> {
+    public class CircBufferIterator implements ListIterator<T> {
         private final CircBuffer<T> _buffer;
         private int _iPresent = -1;
 
