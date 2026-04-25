@@ -381,7 +381,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @see java.util.AbstractCollection#iterator()
      */
     @Override
-    public ListIterator<T> iterator() {
+    public CircBufferIterator iterator() {
         return new CircBufferIterator(this);
     }
 
@@ -394,7 +394,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @return A ListIterator of the elements in this buffer
      * @see AbstractCollection#iterator()
      */
-    public ListIterator<T> iterator(int index) {
+    public CircBufferIterator iterator(int index) {
         return new CircBufferIterator(this, index);
     }
 
