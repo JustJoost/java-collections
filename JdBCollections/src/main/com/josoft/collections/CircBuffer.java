@@ -132,7 +132,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
         // index by one). Chose the side that requires the least amount of elements to be shifted.
         // Removal at one of both ends will not cause shifting at all.
-        if (offset <= _size/2) {
+        if (offset <= _size / 2) {
             for (int i = offset; i >= 1; i--) {
                 setFromNewest(i, getFromNewest(i - 1));
             }
@@ -156,7 +156,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
         // index by one). Chose the side that requires the least amount of elements to be shifted.
         // Removal at one of both ends will not cause shifting at all.
-        if (offset < _size/2) {
+        if (offset < _size / 2) {
             for (int i = offset; i >= 1; i--) {
                 setFromOldest(i, getFromOldest(i - 1));
             }
@@ -182,7 +182,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
         // index by one). Chose the side that requires the least amount of elements to be shifted.
         // Inserting at one of both ends will not cause shifting at all.
-        if (offset <= _size/2) {
+        if (offset <= _size / 2) {
             if (!replaceNewest) {
                 // 'Duplicate' the newest element, oldest element will automatically be overwritten.
                 add(getFromNewest(0));
@@ -215,7 +215,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         // 'Side' to be shifted can be chosen (move up 'newest' index by one, or move down 'oldest'
         // index by one). Chose the side that requires the least amount of elements to be shifted.
         // Inserting at one of both ends will not cause shifting at all.
-        if (offset < _size/2) {
+        if (offset < _size / 2) {
             // If capacity has not been reached yet, move the oldest element down by one, and the
             // pointer to oldest, and increase size (effectively 'duplicating' the oldest element,
             // or 'adding' at the oldest side of the buffer).
@@ -358,7 +358,7 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * @return The number of elements in this buffer
      * @see AbstractCollection#size()
      */
-     @Override
+    @Override
     public int size() {
         return _size;
     }
@@ -379,7 +379,8 @@ public class CircBuffer<T> extends AbstractCollection<T> {
     @Override
     public boolean equals(Object toCompareTo) {
         if (this == toCompareTo) return true;
-        if (!(toCompareTo instanceof CircBuffer<?> toCompareToCasted)) return false;
+        if (!(toCompareTo instanceof CircBuffer<?>)) return false;
+        CircBuffer<?> toCompareToCasted = (CircBuffer<?>) toCompareTo;
         if (_size != toCompareToCasted._size) return false;
         java.util.Iterator<T> it1 = iterator();
         java.util.Iterator<?> it2 = toCompareToCasted.iterator();
@@ -415,7 +416,6 @@ public class CircBuffer<T> extends AbstractCollection<T> {
      * starting from the index supplied (counting from the oldest element).
      *
      * @param index Index at where to start iterating
-     *
      * @return A ListIterator of the elements in this buffer
      * @see AbstractCollection#iterator()
      */
@@ -534,7 +534,9 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         @Override
         public boolean equals(Object toCompareTo) {
             if (this == toCompareTo) return true;
-            if (!(toCompareTo instanceof CircBuffer<?>.CircBufferIterator toCompareToCasted)) return false;
+            if (!(toCompareTo instanceof CircBuffer<?>.CircBufferIterator))
+                return false;
+            CircBufferIterator toCompareToCasted = (CircBufferIterator) toCompareTo;
             return _iPresent == toCompareToCasted._iPresent && Objects.equals(_buffer, toCompareToCasted._buffer);
         }
 
