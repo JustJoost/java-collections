@@ -3,6 +3,7 @@ package com.josoft.collections;
 import java.util.AbstractCollection;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * CircBuffer defines a so called circular buffer, that overwrites the oldest
@@ -375,6 +376,30 @@ public class CircBuffer<T> extends AbstractCollection<T> {
         return _size == 0;
     }
 
+    @Override
+    public boolean equals(Object toCompareTo) {
+        if (this == toCompareTo) return true;
+        if (!(toCompareTo instanceof CircBuffer<?> toCompareToCasted)) return false;
+        if (_size != toCompareToCasted._size) return false;
+        java.util.Iterator<T> it1 = iterator();
+        java.util.Iterator<?> it2 = toCompareToCasted.iterator();
+        while (it1.hasNext()) {
+            T e1 = it1.next();
+            Object e2 = it2.next();
+            if (!Objects.equals(e1, e2)) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        for (T element : this) {
+            result = 31 * result + (element == null ? 0 : element.hashCode());
+        }
+        return result;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -504,6 +529,18 @@ public class CircBuffer<T> extends AbstractCollection<T> {
             } else {
                 return null;
             }
+        }
+
+        @Override
+        public boolean equals(Object toCompareTo) {
+            if (this == toCompareTo) return true;
+            if (!(toCompareTo instanceof CircBuffer<?>.CircBufferIterator toCompareToCasted)) return false;
+            return _iPresent == toCompareToCasted._iPresent && Objects.equals(_buffer, toCompareToCasted._buffer);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(_buffer, _iPresent);
         }
     }
 
